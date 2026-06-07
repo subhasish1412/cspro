@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS Evaluator — Customer Success Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       API KEY MODAL
+  ════════════════════════════════════════════ -->
+  <div id="api-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon"><i class="fa-solid fa-key"></i></div>
+      <h2 class="modal-title">Enter your Anthropic API Key</h2>
+      <p class="modal-sub">Your key is used only in your browser to power AI scoring. It is never stored or sent to any server.</p>
+      <input type="password" id="api-key-input" class="api-input" placeholder="sk-ant-..." />
+      <div id="api-error" class="api-error" style="display:none"><i class="fa-solid fa-circle-exclamation"></i> <span id="api-error-msg"></span></div>
+      <button class="btn-primary full" onclick="saveApiKey()"><i class="fa-solid fa-arrow-right"></i> Continue</button>
+      <p class="modal-note">Get your API key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       LANDING SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="screen-landing" class="screen active">
+    <div class="landing-layout">
+
+      <aside class="landing-sidebar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">CS Evaluator</span>
+        </div>
+        <div class="sidebar-decor">
+          <div class="decor-circle c1"></div>
+          <div class="decor-circle c2"></div>
+          <div class="decor-circle c3"></div>
+        </div>
+        <div class="sidebar-stats">
+          <div class="stat-item"><span class="stat-num">14</span><span class="stat-lbl">Questions</span></div>
+          <div class="stat-item"><span class="stat-num">7</span><span class="stat-lbl">Skill Areas</span></div>
+          <div class="stat-item"><span class="stat-num">~25</span><span class="stat-lbl">Minutes</span></div>
+        </div>
+        <p class="sidebar-tagline">"The definitive test for Customer Success professionals."</p>
+      </aside>
+
+      <main class="landing-main">
+        <div class="landing-content">
+          <div class="eyebrow"><i class="fa-solid fa-chart-line"></i> AI-Powered Assessment</div>
+          <h1 class="landing-title">Customer Success<br /><em>Skill Evaluator</em></h1>
+          <p class="landing-desc">Scenario-driven questions that test real-world judgment across churn risk, escalations, metrics, stakeholder communication, and process design — scored live by AI.</p>
+
+          <div class="chips-row">
+            <span class="chip"><i class="fa-solid fa-heart-pulse"></i> Account Health</span>
+            <span class="chip"><i class="fa-solid fa-triangle-exclamation"></i> Escalation Handling</span>
+            <span class="chip"><i class="fa-solid fa-chart-bar"></i> Data & Reporting</span>
+            <span class="chip"><i class="fa-solid fa-rotate"></i> Renewal & Upsell</span>
+            <span class="chip"><i class="fa-solid fa-users"></i> Stakeholder Comms</span>
+            <span class="chip"><i class="fa-solid fa-gauge-high"></i> CS Metrics</span>
+            <span class="chip"><i class="fa-solid fa-sitemap"></i> Process Design</span>
+          </div>
+
+          <div class="mode-grid">
+            <button class="mode-card" onclick="startQuiz('hire')">
+              <div class="mode-icon hire"><i class="fa-solid fa-briefcase"></i></div>
+              <div class="mode-text">
+                <strong>Hiring Screening</strong>
+                <span>Evaluate a candidate's CS readiness</span>
+              </div>
+              <i class="fa-solid fa-arrow-right mode-arrow"></i>
+            </button>
+            <button class="mode-card" onclick="startQuiz('know')">
+              <div class="mode-icon know"><i class="fa-solid fa-graduation-cap"></i></div>
+              <div class="mode-text">
+                <strong>Knowledge Testing</strong>
+                <span>Benchmark your own CS expertise</span>
+              </div>
+              <i class="fa-solid fa-arrow-right mode-arrow"></i>
+            </button>
+            <button class="mode-card" onclick="startQuiz('prep')">
+              <div class="mode-icon prep"><i class="fa-solid fa-bullseye"></i></div>
+              <div class="mode-text">
+                <strong>Interview Prep</strong>
+                <span>Practice with realistic scenarios</span>
+              </div>
+              <i class="fa-solid fa-arrow-right mode-arrow"></i>
+            </button>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       QUIZ SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-shell">
+
+      <header class="quiz-topbar">
+        <button class="back-btn" onclick="goLanding()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <div class="quiz-progress-wrap">
+          <div class="quiz-progress-bar"><div id="progress-fill" class="quiz-progress-fill"></div></div>
+          <span id="q-counter" class="q-counter-label">1 / 14</span>
+        </div>
+        <div class="topbar-mode" id="topbar-mode"></div>
+      </header>
+
+      <div class="quiz-body">
+        <div class="quiz-left">
+          <div class="q-meta">
+            <span class="q-section-badge" id="q-section-badge"></span>
+            <span class="q-type-badge" id="q-type-badge"></span>
+          </div>
+
+          <div id="scenario-block" class="scenario-block" style="display:none">
+            <div class="scenario-label"><i class="fa-solid fa-file-lines"></i> Scenario</div>
+            <p id="scenario-text"></p>
+          </div>
+
+          <h2 id="q-text" class="q-text"></h2>
+
+          <!-- MCQ options -->
+          <div id="options-wrap" class="options-wrap"></div>
+
+          <!-- Open-ended textarea -->
+          <div id="open-wrap" class="open-wrap" style="display:none">
+            <textarea id="open-ans" class="open-textarea" placeholder="Write your detailed answer here. Be as specific and structured as possible — the AI evaluates depth, structure, and real CS judgment..."></textarea>
+            <div class="char-count"><span id="char-count">0</span> characters</div>
+          </div>
+
+          <!-- AI Feedback panel -->
+          <div id="ai-feedback-panel" class="ai-feedback-panel" style="display:none">
+            <div class="ai-fb-header">
+              <div class="ai-fb-icon"><i class="fa-solid fa-sparkles"></i></div>
+              <div>
+                <div class="ai-fb-title">AI Evaluation</div>
+                <div id="ai-score-display" class="ai-score-display"></div>
+              </div>
+            </div>
+            <div id="ai-fb-body" class="ai-fb-body"></div>
+          </div>
+
+          <div class="action-row">
+            <button id="btn-action" class="btn-primary" onclick="handleAction()">
+              <span id="btn-label">Submit Answer</span>
+              <i id="btn-icon" class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button id="btn-skip" class="btn-ghost" onclick="skipQuestion()">Skip</button>
+          </div>
+        </div>
+
+        <aside class="quiz-right">
+          <div class="q-nav-title">Questions</div>
+          <div id="q-nav-grid" class="q-nav-grid"></div>
+          <div class="section-legend" id="section-legend"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       RESULTS SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="results-shell">
+
+      <header class="results-topbar">
+        <div class="brand small"><span class="brand-dot"></span><span class="brand-name">CS Evaluator</span></div>
+        <button class="btn-ghost" onclick="goLanding()"><i class="fa-solid fa-rotate-left"></i> Start Over</button>
+      </header>
+
+      <div class="results-body">
+
+        <div class="results-hero">
+          <div class="score-ring-wrap">
+            <svg class="score-ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50"/>
+              <circle id="ring-fill" class="ring-fill" cx="60" cy="60" r="50"/>
+            </svg>
+            <div class="ring-inner">
+              <div id="ring-pct" class="ring-pct">—</div>
+              <div class="ring-lbl">Overall</div>
+            </div>
+          </div>
+          <div class="results-summary">
+            <h2 class="results-title">Evaluation Complete</h2>
+            <p id="results-subtitle" class="results-subtitle"></p>
+            <div id="verdict-badge" class="verdict-badge"></div>
+            <div id="results-meta" class="results-meta"></div>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <div class="results-card">
+            <h3 class="card-title"><i class="fa-solid fa-chart-bar"></i> Score by Skill Area</h3>
+            <div id="section-bars" class="section-bars"></div>
+          </div>
+
+          <div class="results-card">
+            <h3 class="card-title"><i class="fa-solid fa-list-check"></i> Question Review</h3>
+            <div id="review-list" class="review-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
